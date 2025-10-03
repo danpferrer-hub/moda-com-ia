@@ -3,20 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Provador Virtual com IA</title>
+    <title>Provador Virtual com IA - Futuro da Moda</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
+            background-color: #0a0a1a;
+            color: #e0e0e0;
         }
-        /* Animação do spinner */
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+        .glass-panel {
+            background: rgba(10, 10, 30, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
+        }
+        .futuristic-btn {
+            border: 1px solid #00ffff;
+            box-shadow: 0 0 5px #00ffff, inset 0 0 5px #00ffff;
+            transition: all 0.3s ease;
+        }
+        .futuristic-btn:hover {
+            background-color: #00ffff;
+            color: #0a0a1a;
+            box-shadow: 0 0 15px #00ffff, inset 0 0 10px #00ffff;
+        }
+        .upload-box {
+            border: 2px dashed rgba(0, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        .upload-box:hover {
+            border-color: #00ffff;
+            background: rgba(0, 255, 255, 0.05);
+        }
         .loader {
-            border: 4px solid rgba(255, 255, 255, 0.3);
+            border: 4px solid rgba(0, 255, 255, 0.2);
             border-radius: 50%;
-            border-top: 4px solid #ffffff;
+            border-top: 4px solid #00ffff;
             width: 50px;
             height: 50px;
             animation: spin 1s linear infinite;
@@ -25,189 +53,264 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        /* Estilos para inputs e selects */
+        .form-input {
+            background-color: rgba(10, 10, 30, 0.8);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            color: #e0e0e0;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #00ffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+        .segmented-control button.active {
+            background-color: #00ffff;
+            color: #0a0a1a;
+            box-shadow: 0 0 10px #00ffff;
+        }
     </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center justify-center p-4">
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
 
-    <div class="w-full max-w-4xl mx-auto">
-        <!-- Cabeçalho -->
+    <div class="w-full max-w-7xl mx-auto">
         <header class="text-center mb-8">
-            <h1 class="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-purple-400 to-pink-500 text-transparent bg-clip-text">Provador Virtual com IA</h1>
-            <p class="text-gray-400 mt-2 text-lg">Envie a foto de uma roupa e veja como fica em um(a) modelo realista.</p>
+            <h1 class="text-4xl md:text-5xl font-bold tracking-tight text-cyan-300 font-orbitron">PROVADOR VIRTUAL</h1>
+            <p class="text-cyan-500 mt-2 text-lg">Construa o futuro do seu estilo.</p>
         </header>
 
-        <!-- Área de Upload -->
-        <div class="bg-gray-800 p-6 rounded-2xl shadow-2xl mb-8 flex flex-col items-center">
-            <div class="flex flex-col sm:flex-row gap-4">
-                <button id="selectImageBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition-transform transform hover:scale-105 w-full sm:w-auto">
-                    Selecionar Imagem
-                </button>
-                <button id="takePhotoBtn" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-6 rounded-lg transition-transform transform hover:scale-105 w-full sm:w-auto">
-                    Tirar Foto
-                </button>
-            </div>
-            <!-- Input de arquivo escondido, acionado pelos botões -->
-            <input type="file" id="imageUpload" accept="image/*" class="hidden">
-            <p id="fileName" class="text-gray-500 mt-3 text-sm"></p>
-            <p class="text-gray-500 mt-4 text-xs text-center">Dica: Para melhores resultados, use uma foto nítida da peça de roupa sobre um fundo neutro.</p>
-        </div>
-
-        <!-- Seção de Resultados -->
-        <main class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Imagem Original -->
-            <div class="flex flex-col items-center">
-                <h2 class="text-2xl font-semibold mb-4 text-gray-300">Sua Foto</h2>
-                <div id="imagePreviewContainer" class="w-full h-96 bg-gray-800 rounded-2xl flex items-center justify-center border-2 border-dashed border-gray-600">
-                    <p class="text-gray-500">A imagem aparecerá aqui</p>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Coluna de Upload e Customização -->
+            <div class="lg:col-span-1 flex flex-col gap-6">
+                <!-- Montar Look Completo -->
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h2 class="font-orbitron text-xl text-cyan-300 border-b border-cyan-500/20 pb-2 mb-4">Montar Look</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- Parte de Cima, Baixo, Calçados, Acessórios -->
+                        <div id="upload-top" class="upload-box rounded-lg flex flex-col items-center justify-center h-32 cursor-pointer p-2 text-center">
+                            <span class="text-3xl">👕</span> <p class="text-xs mt-1 text-cyan-400">Parte de Cima</p>
+                            <input type="file" class="hidden" data-part="top" accept="image/*">
+                        </div>
+                        <div id="upload-bottom" class="upload-box rounded-lg flex flex-col items-center justify-center h-32 cursor-pointer p-2 text-center">
+                            <span class="text-3xl">👖</span> <p class="text-xs mt-1 text-cyan-400">Parte de Baixo</p>
+                             <input type="file" class="hidden" data-part="bottom" accept="image/*">
+                        </div>
+                        <div id="upload-shoes" class="upload-box rounded-lg flex flex-col items-center justify-center h-32 cursor-pointer p-2 text-center">
+                            <span class="text-3xl">👟</span> <p class="text-xs mt-1 text-cyan-400">Calçados</p>
+                             <input type="file" class="hidden" data-part="shoes" accept="image/*">
+                        </div>
+                        <div id="upload-accessories" class="upload-box rounded-lg flex flex-col items-center justify-center h-32 cursor-pointer p-2 text-center">
+                           <span class="text-3xl">🧢</span> <p class="text-xs mt-1 text-cyan-400">Acessórios</p>
+                           <input type="file" class="hidden" data-part="accessories" accept="image/*">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Personalize o Modelo -->
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h2 class="font-orbitron text-xl text-cyan-300 border-b border-cyan-500/20 pb-2 mb-4">Personalizar Modelo</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-sm text-cyan-400">Estilo</label>
+                            <div id="modelType" class="segmented-control flex border border-cyan-500/30 rounded-md p-0.5">
+                                <button data-value="de passarela" class="active flex-1 p-1 text-xs rounded-sm transition">Passarela</button>
+                                <button data-value="em situação do dia a dia" class="flex-1 p-1 text-xs rounded-sm transition">Cotidiano</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-sm text-cyan-400">Cor de Pele</label>
+                             <div id="skinTone" class="segmented-control flex border border-cyan-500/30 rounded-md p-0.5">
+                                <button data-value="branca" class="active flex-1 p-1 text-xs rounded-sm transition">Branca</button>
+                                <button data-value="parda" class="flex-1 p-1 text-xs rounded-sm transition">Parda</button>
+                                <button data-value="negra" class="flex-1 p-1 text-xs rounded-sm transition">Negra</button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="age" class="text-sm text-cyan-400">Idade</label>
+                                <input type="number" id="age" value="25" class="form-input w-full rounded-md p-2 text-sm">
+                            </div>
+                            <div>
+                                <label for="height" class="text-sm text-cyan-400">Estatura</label>
+                                <select id="height" class="form-input w-full rounded-md p-2 text-sm appearance-none">
+                                    <option value="baixa">Baixo(a)</option>
+                                    <option value="média" selected>Médio(a)</option>
+                                    <option value="alta">Alto(a)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Imagem Gerada pela IA -->
-            <div class="flex flex-col items-center">
-                <h2 class="text-2xl font-semibold mb-4 text-gray-300">Modelo IA</h2>
-                <div id="generatedImageContainer" class="w-full h-96 bg-gray-800 rounded-2xl flex items-center justify-center border-2 border-dashed border-gray-600 relative overflow-hidden">
+            <!-- Coluna de Resultado -->
+            <div class="lg:col-span-2 flex flex-col">
+                 <div id="generatedImageContainer" class="glass-panel w-full flex-grow rounded-2xl flex items-center justify-center relative overflow-hidden min-h-[400px] lg:min-h-0">
                     <div id="loader" class="loader hidden"></div>
-                    <p id="placeholderText" class="text-gray-500">O resultado da IA aparecerá aqui</p>
-                    <img id="generatedImage" src="" alt="Imagem gerada pela IA" class="hidden w-full h-full object-cover rounded-2xl">
+                    <p id="placeholderText" class="text-cyan-600">O resultado da IA aparecerá aqui</p>
+                    <img id="generatedImage" src="" alt="Imagem gerada pela IA" class="hidden w-full h-full object-cover">
                 </div>
+                 <footer class="mt-6 text-center">
+                    <button id="generateButton" class="futuristic-btn text-cyan-300 font-bold py-3 px-8 rounded-lg text-lg font-orbitron disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-cyan-300" disabled>
+                        GERAR MODELO
+                    </button>
+                </footer>
             </div>
-        </main>
-
-        <!-- Botão de Ação -->
-        <footer class="mt-8 text-center">
-            <button id="generateButton" class="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-3 px-8 rounded-lg text-lg transition-transform transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                Gerar Modelo
-            </button>
-        </footer>
+        </div>
     </div>
 
     <!-- Modal de Erro -->
-    <div id="errorModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 p-4">
-        <div class="bg-gray-800 rounded-2xl p-8 max-w-sm w-full mx-auto shadow-2xl border border-gray-700">
-            <h3 class="text-2xl font-bold text-red-500 mb-4">Ocorreu um Erro</h3>
+    <div id="errorModal" class="fixed inset-0 bg-black bg-opacity-80 backdrop-filter backdrop-blur-sm flex items-center justify-center hidden z-50 p-4">
+        <div class="glass-panel rounded-2xl p-8 max-w-sm w-full mx-auto shadow-2xl">
+            <h3 class="text-2xl font-bold text-red-500 mb-4 font-orbitron">ERRO DE SISTEMA</h3>
             <p id="modalErrorMessage" class="text-gray-300 mb-6"></p>
-            <button id="closeModalBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg w-full transition-transform transform hover:scale-105">
-                Entendi
+            <button id="closeModalBtn" class="futuristic-btn w-full text-cyan-300 font-bold py-2 px-4 rounded-lg">
+                OK
             </button>
         </div>
     </div>
 
     <script>
-        // Elementos do DOM
-        const imageUpload = document.getElementById('imageUpload');
-        const selectImageBtn = document.getElementById('selectImageBtn');
-        const takePhotoBtn = document.getElementById('takePhotoBtn');
-        const imagePreviewContainer = document.getElementById('imagePreviewContainer');
-        const fileNameDisplay = document.getElementById('fileName');
+        // --- DOM Elements ---
         const generateButton = document.getElementById('generateButton');
         const generatedImageContainer = document.getElementById('generatedImageContainer');
         const generatedImage = document.getElementById('generatedImage');
         const loader = document.getElementById('loader');
         const placeholderText = document.getElementById('placeholderText');
-        
-        // Elementos do Modal de Erro
         const errorModal = document.getElementById('errorModal');
         const modalErrorMessage = document.getElementById('modalErrorMessage');
         const closeModalBtn = document.getElementById('closeModalBtn');
-
-        let uploadedImageBase64 = null;
-        let uploadedImageType = null;
-
-        // Listeners para os botões de upload
-        selectImageBtn.addEventListener('click', () => {
-            imageUpload.removeAttribute('capture');
-            imageUpload.click();
-        });
-
-        takePhotoBtn.addEventListener('click', () => {
-            imageUpload.setAttribute('capture', 'environment');
-            imageUpload.click();
-        });
-
-        // Listener para fechar o modal
-        closeModalBtn.addEventListener('click', () => {
-            errorModal.classList.add('hidden');
-        });
-
-        // Listener para o input de imagem
-        imageUpload.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                fileNameDisplay.textContent = file.name;
-                generateButton.disabled = false;
-                
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.className = 'w-full h-full object-contain rounded-2xl';
-                    imagePreviewContainer.innerHTML = '';
-                    imagePreviewContainer.appendChild(img);
-                    resizeAndEncode(file);
-                };
-                reader.readAsDataURL(file);
-            }
-        });
+        const uploadBoxes = {
+            top: document.getElementById('upload-top'),
+            bottom: document.getElementById('upload-bottom'),
+            shoes: document.getElementById('upload-shoes'),
+            accessories: document.getElementById('upload-accessories'),
+        };
+        const fileInputs = document.querySelectorAll('input[type="file"]');
+        const modelTypeContainer = document.getElementById('modelType');
+        const skinToneContainer = document.getElementById('skinTone');
+        const ageInput = document.getElementById('age');
+        const heightSelect = document.getElementById('height');
         
+        // --- State ---
+        let uploadedLook = { top: null, bottom: null, shoes: null, accessories: null };
+
+        // --- Event Listeners ---
+        Object.values(uploadBoxes).forEach(box => {
+            box.addEventListener('click', () => box.querySelector('input[type="file"]').click());
+        });
+
+        fileInputs.forEach(input => {
+            input.addEventListener('change', (event) => handleFileUpload(event, input.dataset.part));
+        });
+
+        closeModalBtn.addEventListener('click', () => errorModal.classList.add('hidden'));
+
         generateButton.addEventListener('click', generateModel);
+        
+        // --- Segmented Controls ---
+        function setupSegmentedControl(container) {
+            container.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    container.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+                }
+            });
+        }
+        setupSegmentedControl(modelTypeContainer);
+        setupSegmentedControl(skinToneContainer);
 
-        function resizeAndEncode(file) {
+        // --- Core Functions ---
+        function handleFileUpload(event, part) {
+            const file = event.target.files[0];
+            const box = uploadBoxes[part];
+            if (!file || !box) return;
+
             const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 1024;
-                    const MAX_HEIGHT = 1024;
-                    let width = img.width;
-                    let height = img.height;
+            reader.onload = (e) => {
+                resizeAndEncode(file, part, (base64, mimeType) => {
+                    uploadedLook[part] = { data: base64, mimeType: mimeType };
+                    box.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-contain rounded-lg">`;
+                    checkIfReadyToGenerate();
+                });
+            };
+            reader.readAsDataURL(file);
+        }
 
+        function resizeAndEncode(file, part, callback) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_DIMENSION = 1024;
+                    let { width, height } = img;
                     if (width > height) {
-                        if (width > MAX_WIDTH) {
-                            height *= MAX_WIDTH / width;
-                            width = MAX_WIDTH;
-                        }
+                        if (width > MAX_DIMENSION) { height *= MAX_DIMENSION / width; width = MAX_DIMENSION; }
                     } else {
-                        if (height > MAX_HEIGHT) {
-                            width *= MAX_HEIGHT / height;
-                            height = MAX_HEIGHT;
-                        }
+                        if (height > MAX_DIMENSION) { width *= MAX_DIMENSION / height; height = MAX_DIMENSION; }
                     }
                     canvas.width = width;
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-                    
-                    uploadedImageType = file.type || 'image/jpeg';
-                    uploadedImageBase64 = canvas.toDataURL(uploadedImageType).split(',')[1];
-                }
+                    const mimeType = file.type || 'image/jpeg';
+                    const base64 = canvas.toDataURL(mimeType).split(',')[1];
+                    callback(base64, mimeType);
+                };
                 img.src = e.target.result;
-            }
+            };
             reader.readAsDataURL(file);
         }
 
-        async function generateModel() {
-            if (!uploadedImageBase64) {
-                showErrorModal('Por favor, selecione uma imagem primeiro.');
-                return;
-            }
+        function checkIfReadyToGenerate() {
+            const hasAtLeastOnePiece = Object.values(uploadedLook).some(p => p !== null);
+            generateButton.disabled = !hasAtLeastOnePiece;
+        }
+        
+        function buildPrompt() {
+            const modelType = modelTypeContainer.querySelector('.active').dataset.value;
+            const skinTone = skinToneContainer.querySelector('.active').dataset.value;
+            const age = ageInput.value;
+            const height = heightSelect.value;
+            
+            let partsDescription = [];
+            if (uploadedLook.top) partsDescription.push("a peça de cima da primeira imagem");
+            if (uploadedLook.bottom) partsDescription.push("a parte de baixo da segunda imagem");
+            if (uploadedLook.shoes) partsDescription.push("os calçados da terceira imagem");
+            if (uploadedLook.accessories) partsDescription.push("o acessório da quarta imagem");
 
+            const lookDescription = partsDescription.join(', ');
+
+            return `Crie uma foto ultra-realista de um modelo masculino profissional ${modelType}.
+            Características do modelo: pele ${skinTone}, aproximadamente ${age} anos de idade, e de estatura ${height}.
+            O modelo deve estar em um estúdio fotográfico com fundo e iluminação neutros.
+            Ele deve vestir o look completo formado por: ${lookDescription}.
+            O foco principal deve ser mostrar claramente as roupas e acessórios. A imagem deve ser de alta definição e fotorrealística.`;
+        }
+
+        async function generateModel() {
             setLoadingState(true);
 
+            const userPrompt = buildPrompt();
+            const imageParts = Object.values(uploadedLook)
+                .filter(p => p !== null)
+                .map(p => ({ inlineData: { mimeType: p.mimeType, data: p.data } }));
+
+            if (imageParts.length === 0) {
+                showErrorModal('Por favor, envie a imagem de pelo menos uma peça de roupa.');
+                setLoadingState(false);
+                return;
+            }
+            
             const apiKey = "AIzaSyAKZ1PNDyFMuaXUhot54PlnFxg4Oyc7hig";
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
-            const userPrompt = "Crie uma foto de um modelo masculino profissional de passarela, em um estúdio com iluminação neutra e profissional, vestindo a roupa da imagem fornecida. O foco deve ser na roupa. O resultado precisa ser ultra-realista, com alta definição e fotorrealístico.";
 
             const payload = {
-                contents: [{
-                    parts: [
-                        { text: userPrompt },
-                        { inlineData: { mimeType: uploadedImageType, data: uploadedImageBase64 } }
-                    ]
-                }],
+                contents: [{ parts: [{ text: userPrompt }, ...imageParts] }],
                 generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
             };
-            
+
             try {
                 const result = await fetchWithBackoff(apiUrl, {
                     method: 'POST',
@@ -215,27 +318,21 @@
                     body: JSON.stringify(payload)
                 });
                 
-                console.log("Resposta da API:", JSON.stringify(result, null, 2));
-
-                if (result.error) throw new Error(`Erro da API: ${result.error.message}`);
+                if (result.error) throw new Error(`API Error: ${result.error.message}`);
                 
-                if (result.candidates && result.candidates[0].finishReason === 'SAFETY') {
-                    const safetyRatings = result.candidates[0].safetyRatings.map(r => `${r.category}: ${r.probability}`).join(', ');
-                    throw new Error(`A geração foi bloqueada por motivos de segurança. Detalhes: ${safetyRatings}`);
-                }
-
                 const base64Data = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
                 
                 if (base64Data) {
                     generatedImage.src = `data:image/png;base64,${base64Data}`;
                     generatedImage.classList.remove('hidden');
+                    placeholderText.classList.add('hidden');
                 } else {
-                    const errorText = result?.candidates?.[0]?.content?.parts?.[0]?.text || "A resposta da API não continha uma imagem ou retornou um formato inesperado.";
+                     const errorText = result?.candidates?.[0]?.content?.parts?.[0]?.text || "A resposta da API não continha uma imagem ou retornou um formato inesperado.";
                     throw new Error(errorText);
                 }
 
             } catch (error) {
-                console.error('Erro detalhado ao chamar a API:', error);
+                console.error('Erro detalhado:', error);
                 showErrorModal(error.message);
                 placeholderText.classList.remove('hidden');
             } finally {
@@ -244,11 +341,10 @@
         }
         
         async function fetchWithBackoff(url, options, retries = 3, delay = 1000) {
-            try {
+             try {
                 const response = await fetch(url, options);
                 if (!response.ok) {
                     const errorBody = await response.json().catch(() => ({ message: 'Corpo do erro não é JSON' }));
-                    console.error("Erro na resposta da rede:", response.status, errorBody);
                     if (response.status === 429 && retries > 0) {
                         await new Promise(resolve => setTimeout(resolve, delay));
                         return fetchWithBackoff(url, options, retries - 1, delay * 2);
@@ -283,9 +379,5 @@
     </script>
 </body>
 </html>
-
-
-
-
 
 
