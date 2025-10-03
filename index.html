@@ -12,21 +12,6 @@
         body {
             font-family: 'Inter', sans-serif;
         }
-        /* Estilo para o seletor de arquivo personalizado */
-        .file-input-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-            cursor: pointer;
-        }
-        .file-input-wrapper input[type=file] {
-            font-size: 100px;
-            position: absolute;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            cursor: pointer;
-        }
         /* Animação do spinner */
         .loader {
             border: 4px solid rgba(255, 255, 255, 0.3);
@@ -53,11 +38,18 @@
 
         <!-- Área de Upload -->
         <div class="bg-gray-800 p-6 rounded-2xl shadow-2xl mb-8 flex flex-col items-center">
-            <div class="file-input-wrapper bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition-transform transform hover:scale-105">
-                <span>Selecionar Imagem</span>
-                <input type="file" id="imageUpload" accept="image/*">
+            <div class="flex flex-col sm:flex-row gap-4">
+                <button id="selectImageBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition-transform transform hover:scale-105 w-full sm:w-auto">
+                    Selecionar Imagem
+                </button>
+                <button id="takePhotoBtn" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-6 rounded-lg transition-transform transform hover:scale-105 w-full sm:w-auto">
+                    Tirar Foto
+                </button>
             </div>
+            <!-- Input de arquivo escondido, acionado pelos botões -->
+            <input type="file" id="imageUpload" accept="image/*" class="hidden">
             <p id="fileName" class="text-gray-500 mt-3 text-sm"></p>
+            <p class="text-gray-500 mt-4 text-xs text-center">Dica: Para melhores resultados, use uma foto nítida da peça de roupa sobre um fundo neutro.</p>
         </div>
 
         <!-- Seção de Resultados -->
@@ -93,6 +85,8 @@
     <script>
         // Elementos do DOM
         const imageUpload = document.getElementById('imageUpload');
+        const selectImageBtn = document.getElementById('selectImageBtn');
+        const takePhotoBtn = document.getElementById('takePhotoBtn');
         const imagePreviewContainer = document.getElementById('imagePreviewContainer');
         const fileNameDisplay = document.getElementById('fileName');
         const generateButton = document.getElementById('generateButton');
@@ -105,10 +99,22 @@
         let uploadedImageBase64 = null;
         let uploadedImageType = null;
 
+        // Listeners para os botões de upload
+        selectImageBtn.addEventListener('click', () => {
+            imageUpload.removeAttribute('capture');
+            imageUpload.click();
+        });
+
+        takePhotoBtn.addEventListener('click', () => {
+            imageUpload.setAttribute('capture', 'environment'); // 'user' para selfie, 'environment' para câmera traseira
+            imageUpload.click();
+        });
+
         // Listener para o input de imagem
         imageUpload.addEventListener('change', (event) => {
             const file = event.target.files[0];
             if (file) {
+                console.log("Arquivo selecionado:", file.name, "Tipo:", file.type, "Tamanho:", file.size);
                 fileNameDisplay.textContent = file.name;
                 generateButton.disabled = false;
                 errorMessage.textContent = '';
@@ -165,6 +171,7 @@
                     uploadedImageType = file.type;
                     // Remove o prefixo 'data:image/...;base64,'
                     uploadedImageBase64 = canvas.toDataURL(file.type).split(',')[1];
+                    console.log("Imagem redimensionada e codificada em Base64.");
                 }
                 img.src = e.target.result;
             }
@@ -180,10 +187,9 @@
                 return;
             }
 
-            // UI de carregamento
             setLoadingState(true);
+            console.log("Iniciando geração de modelo...");
 
-            // Chave de API (será fornecida pelo ambiente de execução)
             const apiKey = "";
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
 
@@ -206,30 +212,33 @@
                 },
             };
             
+            console.log("Enviando payload para a API. Tamanho da imagem Base64:", uploadedImageBase64.length);
+
             try {
-                // Tentativa de chamada à API com backoff exponencial
                 const result = await fetchWithBackoff(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
                 
-                // Extrai a imagem da resposta
+                console.log("Resposta recebida da API:", result);
+                
                 const base64Data = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
                 
                 if (base64Data) {
                     generatedImage.src = `data:image/png;base64,${base64Data}`;
                     generatedImage.classList.remove('hidden');
+                    console.log("Imagem gerada com sucesso.");
                 } else {
-                    console.error("Resposta da API inválida:", result);
-                    const errorText = result?.candidates?.[0]?.content?.parts?.[0]?.text || "Não foi possível gerar a imagem. Verifique o console para mais detalhes.";
+                    console.error("Resposta da API inválida ou sem imagem:", result);
+                    const errorText = result?.candidates?.[0]?.content?.parts?.[0]?.text || "A resposta da API não continha dados de imagem.";
                     errorMessage.textContent = `Erro: ${errorText}`;
                     placeholderText.classList.remove('hidden');
                 }
 
             } catch (error) {
-                console.error('Erro ao chamar a API Gemini:', error);
-                errorMessage.textContent = 'Ocorreu um erro. Tente novamente mais tarde.';
+                console.error('Erro detalhado ao chamar a API Gemini:', error);
+                errorMessage.textContent = `Erro de comunicação: ${error.message}. Tente novamente.`;
                 placeholderText.classList.remove('hidden');
             } finally {
                 setLoadingState(false);
@@ -283,3 +292,6 @@
     </script>
 </body>
 </html>
+
+
+
