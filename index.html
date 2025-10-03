@@ -73,13 +73,23 @@
             </div>
         </main>
 
-        <!-- Botão de Ação e Mensagens -->
+        <!-- Botão de Ação -->
         <footer class="mt-8 text-center">
             <button id="generateButton" class="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-3 px-8 rounded-lg text-lg transition-transform transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                 Gerar Modelo
             </button>
-            <p id="errorMessage" class="text-red-400 mt-4 h-5"></p>
         </footer>
+    </div>
+
+    <!-- Modal de Erro -->
+    <div id="errorModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 p-4">
+        <div class="bg-gray-800 rounded-2xl p-8 max-w-sm w-full mx-auto shadow-2xl border border-gray-700">
+            <h3 class="text-2xl font-bold text-red-500 mb-4">Ocorreu um Erro</h3>
+            <p id="modalErrorMessage" class="text-gray-300 mb-6"></p>
+            <button id="closeModalBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg w-full transition-transform transform hover:scale-105">
+                Entendi
+            </button>
+        </div>
     </div>
 
     <script>
@@ -94,7 +104,11 @@
         const generatedImage = document.getElementById('generatedImage');
         const loader = document.getElementById('loader');
         const placeholderText = document.getElementById('placeholderText');
-        const errorMessage = document.getElementById('errorMessage');
+        
+        // Elementos do Modal de Erro
+        const errorModal = document.getElementById('errorModal');
+        const modalErrorMessage = document.getElementById('modalErrorMessage');
+        const closeModalBtn = document.getElementById('closeModalBtn');
 
         let uploadedImageBase64 = null;
         let uploadedImageType = null;
@@ -106,19 +120,22 @@
         });
 
         takePhotoBtn.addEventListener('click', () => {
-            imageUpload.setAttribute('capture', 'environment'); // 'user' para selfie, 'environment' para câmera traseira
+            imageUpload.setAttribute('capture', 'environment');
             imageUpload.click();
+        });
+
+        // Listener para fechar o modal
+        closeModalBtn.addEventListener('click', () => {
+            errorModal.classList.add('hidden');
         });
 
         // Listener para o input de imagem
         imageUpload.addEventListener('change', (event) => {
             const file = event.target.files[0];
             if (file) {
-                console.log("Arquivo selecionado:", file.name, "Tipo:", file.type, "Tamanho:", file.size);
                 fileNameDisplay.textContent = file.name;
                 generateButton.disabled = false;
-                errorMessage.textContent = '';
-
+                
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     const img = document.createElement('img');
@@ -126,21 +143,14 @@
                     img.className = 'w-full h-full object-contain rounded-2xl';
                     imagePreviewContainer.innerHTML = '';
                     imagePreviewContainer.appendChild(img);
-
-                    // Redimensionar e converter para Base64
                     resizeAndEncode(file);
                 };
                 reader.readAsDataURL(file);
             }
         });
         
-        // Listener para o botão de gerar
         generateButton.addEventListener('click', generateModel);
 
-        /**
-         * Redimensiona a imagem para não exceder o limite da API e a converte para Base64.
-         * @param {File} file - O arquivo de imagem a ser processado.
-         */
         function resizeAndEncode(file) {
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -168,52 +178,36 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
                     
-                    uploadedImageType = file.type;
-                    // Remove o prefixo 'data:image/...;base64,'
-                    uploadedImageBase64 = canvas.toDataURL(file.type).split(',')[1];
-                    console.log("Imagem redimensionada e codificada em Base64.");
+                    uploadedImageType = file.type || 'image/jpeg';
+                    uploadedImageBase64 = canvas.toDataURL(uploadedImageType).split(',')[1];
                 }
                 img.src = e.target.result;
             }
             reader.readAsDataURL(file);
         }
 
-        /**
-         * Envia a imagem para a API da IA e exibe o resultado.
-         */
         async function generateModel() {
             if (!uploadedImageBase64) {
-                errorMessage.textContent = 'Por favor, selecione uma imagem primeiro.';
+                showErrorModal('Por favor, selecione uma imagem primeiro.');
                 return;
             }
 
             setLoadingState(true);
-            console.log("Iniciando geração de modelo...");
 
             const apiKey = "";
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
-
             const userPrompt = "Crie uma foto de um(a) modelo profissional de passarela, em um estúdio com iluminação neutra e profissional, vestindo a roupa da imagem fornecida. O foco deve ser na roupa. O resultado precisa ser ultra-realista, com alta definição e fotorrealístico.";
 
             const payload = {
                 contents: [{
                     parts: [
                         { text: userPrompt },
-                        {
-                            inlineData: {
-                                mimeType: uploadedImageType,
-                                data: uploadedImageBase64
-                            }
-                        }
+                        { inlineData: { mimeType: uploadedImageType, data: uploadedImageBase64 } }
                     ]
                 }],
-                generationConfig: {
-                    responseModalities: ['TEXT', 'IMAGE']
-                },
+                generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
             };
             
-            console.log("Enviando payload para a API. Tamanho da imagem Base64:", uploadedImageBase64.length);
-
             try {
                 const result = await fetchWithBackoff(apiUrl, {
                     method: 'POST',
@@ -221,46 +215,45 @@
                     body: JSON.stringify(payload)
                 });
                 
-                console.log("Resposta recebida da API:", result);
+                console.log("Resposta da API:", JSON.stringify(result, null, 2));
+
+                if (result.error) throw new Error(`Erro da API: ${result.error.message}`);
                 
+                if (result.candidates && result.candidates[0].finishReason === 'SAFETY') {
+                    const safetyRatings = result.candidates[0].safetyRatings.map(r => `${r.category}: ${r.probability}`).join(', ');
+                    throw new Error(`A geração foi bloqueada por motivos de segurança. Detalhes: ${safetyRatings}`);
+                }
+
                 const base64Data = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
                 
                 if (base64Data) {
                     generatedImage.src = `data:image/png;base64,${base64Data}`;
                     generatedImage.classList.remove('hidden');
-                    console.log("Imagem gerada com sucesso.");
                 } else {
-                    console.error("Resposta da API inválida ou sem imagem:", result);
-                    const errorText = result?.candidates?.[0]?.content?.parts?.[0]?.text || "A resposta da API não continha dados de imagem.";
-                    errorMessage.textContent = `Erro: ${errorText}`;
-                    placeholderText.classList.remove('hidden');
+                    const errorText = result?.candidates?.[0]?.content?.parts?.[0]?.text || "A resposta da API não continha uma imagem ou retornou um formato inesperado.";
+                    throw new Error(errorText);
                 }
 
             } catch (error) {
-                console.error('Erro detalhado ao chamar a API Gemini:', error);
-                errorMessage.textContent = `Erro de comunicação: ${error.message}. Tente novamente.`;
+                console.error('Erro detalhado ao chamar a API:', error);
+                showErrorModal(error.message);
                 placeholderText.classList.remove('hidden');
             } finally {
                 setLoadingState(false);
             }
         }
         
-        /**
-         * Realiza uma chamada fetch com tentativas e backoff exponencial.
-         * @param {string} url - A URL da API.
-         * @param {object} options - As opções da requisição fetch.
-         * @param {number} retries - O número de tentativas.
-         * @param {number} delay - O atraso inicial.
-         */
         async function fetchWithBackoff(url, options, retries = 3, delay = 1000) {
             try {
                 const response = await fetch(url, options);
                 if (!response.ok) {
-                    if (response.status === 429 && retries > 0) { // Too Many Requests
+                    const errorBody = await response.json().catch(() => ({ message: 'Corpo do erro não é JSON' }));
+                    console.error("Erro na resposta da rede:", response.status, errorBody);
+                    if (response.status === 429 && retries > 0) {
                         await new Promise(resolve => setTimeout(resolve, delay));
                         return fetchWithBackoff(url, options, retries - 1, delay * 2);
                     }
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(`Erro de rede: ${response.status} - ${errorBody.error?.message || response.statusText}`);
                 }
                 return await response.json();
             } catch (error) {
@@ -272,14 +265,8 @@
             }
         }
 
-        /**
-         * Controla o estado visual de carregamento da interface.
-         * @param {boolean} isLoading - Define se o estado de carregamento está ativo.
-         */
         function setLoadingState(isLoading) {
             generateButton.disabled = isLoading;
-            errorMessage.textContent = '';
-            
             if (isLoading) {
                 loader.classList.remove('hidden');
                 placeholderText.classList.add('hidden');
@@ -289,9 +276,11 @@
             }
         }
 
+        function showErrorModal(message) {
+            modalErrorMessage.textContent = message;
+            errorModal.classList.remove('hidden');
+        }
     </script>
 </body>
 </html>
-
-
 
